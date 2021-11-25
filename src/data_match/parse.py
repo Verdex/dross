@@ -11,8 +11,6 @@ Res = 0
 Con = 1
 Val = 2
 
-def data(input):
-
 def matcher(input):
     # TODO
 
@@ -141,55 +139,63 @@ def parse_matcher(str):
 # blah -> "blah"
 # x(blah)  -> data { name: x, args: ["blah"]}
 # x(y()) -> data { name: x, args: [data{name:y, args:[]}]}
-def parse_data(str):
+def parse_data(input):
+    def helper(input):
+        def body(input):
 
-    def body(input):
+            l_paren_result = l_paren(input)
 
-        l_paren_result = l_paren(input)
+            if l_paren_result[Res] is Result.Fail:
+                return (Result.Fail, input)
 
-        if l_paren_result[Res] is Result.Fail:
+            ret = []
+
+            r_paren_result = r_paren(l_paren_result[Con])
+
+            con = l_paren_result[Con]
+
+            while r_paren_result[Res] is not Result.Ok:
+                data_result = helper(con)
+
+                if data_result[Res] is Result.Fail:
+                    raise Exception("Found invalid input inside data body parser")
+                
+                con = data_result[Con]
+                ret.append(data_result[Val])
+                r_paren_result = r_paren(con)
+
+                if r_paren_result[Res] is Result.Fail:
+                    comma_result = comma(con)
+                    if comma_result[Res] is Result.Fail:
+                        raise Exception("Expected comma inside data body parser")
+                    con = comma_result[Con]
+
+            return (Result.Ok, r_paren_result[Con], ret)
+
+        ret = Data()
+
+        sym_result = symbol(input)
+        
+        if sym_result[Res] is Result.Ok:
+            ret.name = sym_result[Val]
+            body_result = body(sym_result[Con])
+
+            if body_result[Res] is Result.Ok:
+                ret.args = body_result[Val]
+                return (Result.Ok, body_result[Con], ret)
+            elif body_result[Res] is Result.Fail:
+                return (Result.Ok, sym_result[Con], sym_result[Val])
+            else:
+                raise Exception("impossible")
+        elif sym_result[Res] is Result.Fail:
             return (Result.Fail, input)
-
-        ret = []
-
-        r_paren_result = r_paren(l_paren_result[Con])
-
-        con = l_paren_result[Con]
-
-        while r_paren_result[Res] is not Result.Ok:
-            data_result = data(con)
-
-            if data_result[Res] is Result.Fail:
-                raise Exception("Found invalid input inside data body parser")
-            
-            con = data_result[Con]
-            ret.append(data_result[Val])
-            r_paren_result = r_paren(con)
-
-            if r_paren_result[Res] is Result.Fail:
-                comma_result = comma(con)
-                if comma_result[Res] is Result.Fail:
-                    raise Exception("Expected comma inside data body parser")
-                con = comma_result[Con]
-
-        return (Result.Ok, r_paren_result[Con], ret)
-
-    ret = Data()
-
-    sym_result = symbol(input)
-    
-    if sym_result[Res] is Result.Ok:
-        ret.name = sym_result[Val]
-        body_result = body(sym_result[Con])
-
-        if body_result[Res] is Result.Ok:
-            ret.args = body_result[Val]
-            return (Result.Ok, body_result[Con], ret)
-        elif body_result[Res] is Result.Fail:
-            return (Result.Ok, sym_result[Con], sym_result[Val])
         else:
             raise Exception("impossible")
-    elif sym_result[Res] is Result.Fail:
-        return (Result.Fail, input)
+
+    helper_result = helper(input)
+    if helper_result[Res] is Result.Ok and helper_result[Con] == '':
+        return helper_result[Val]
+    elif helper_result[Res] is Result.Ok:
+        raise Exception(f"Data parser did not parse entire input: {helper_result[Con]}")
     else:
-        raise Exception("impossible")
+        raise Exception("Failure to parse data")
