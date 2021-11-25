@@ -52,48 +52,33 @@ def matcher(input):
 
         return (Result.Ok, r_paren_result[Con], ret)
 
-    ret = Data()
-
     dot_result = dot(input)
 
     if dot_result[Res] is Result.Ok:
-        pass
+        return (Result.Ok, dot_result[Con], MatchAnyString())
+
+    star_result = star(input)
+
+    if star_result[Res] is Result.Ok:
+        return (Result.Ok, star_result[Con], MatchUntilEnd())
+
+    body_result = body(input)
+
+    if body_result[Res] is Result.Ok:
+        return (Result.Ok, body_result[Con], body_result[Val])
 
     var_result = variable(input)
 
-
     if var_result[Res] is Result.Ok:
-        ret.name = var_result[Val]
-        body_result = body(var_result[Con])
+        return (Result.Ok, var_result[Con], CaptureString(var_result[Val]))
 
-        if body_result[Res] is Result.Ok:
-            ret.args = body_result[Val]
-            return (Result.Ok, body_result[Con], ret)
-        elif body_result[Res] is Result.Fail:
-            return (Result.Fail, input)
-        else:
-            raise Exception("impossible")
-        
-    elif var_result[Res] is Result.Fail:
-        sym_result = symbol(input)
-        
-        if sym_result[Res] is Result.Ok:
-            ret.name = sym_result[Val]
-            body_result = body(sym_result[Con])
+    sym_result = symbol(input)
 
-            if body_result[Res] is Result.Ok:
-                ret.args = body_result[Val]
-                return (Result.Ok, body_result[Con], ret)
-            elif body_result[Res] is Result.Fail:
-                return (Result.Fail, input)
-            else:
-                raise Exception("impossible")
-        elif sym_result[Res] is Result.Fail:
-            return (Result.Fail, input)
-        else:
-            raise Exception("impossible")
-    else:
-        raise Exception("impossible")
+    if sym_result[Res] is Result.Ok:
+        return (Result.Ok, sym_result[Con], MatchStringWithValue(sym_result[Val])) 
+
+    raise Exception("Encountered error while parsing matcher")
+
     
 def dot(input):
     m = re.match("\s*\.(.*$)", input)
