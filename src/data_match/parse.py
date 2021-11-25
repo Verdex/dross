@@ -22,6 +22,7 @@ def matcher(input):
     # TODO make sure * is always last
 
     def body(input):
+        # TODO need to grab variable or symbol
 
         l_paren_result = l_paren(input)
 
