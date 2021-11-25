@@ -2,6 +2,12 @@
 import re
 from enum import Enum
 from . import Data
+from .matching import MatchAnyString
+from .matching import CaptureString 
+from .matching import MatchUntilEnd
+from .matching import MatchStringWithValue
+from .matching import MatchDataWithName 
+from .matching import CaptureData 
 
 class Result(Enum):
     Ok = 1
@@ -13,6 +19,7 @@ Val = 2
 
 def matcher(input):
     # TODO
+    # TODO make sure * is always last
 
     def body(input):
 
@@ -25,15 +32,35 @@ def matcher(input):
 
         r_paren_result = r_paren(l_paren_result[Con])
 
+        con = l_paren_result[Con]
+
         while r_paren_result[Res] is not Result.Ok:
+            data_result = matcher(con)
 
-            r_paren_result = r_paren(l_paren_result[Con])
+            if data_result[Res] is Result.Fail:
+                raise Exception("Found invalid input inside data body parser")
+            
+            con = data_result[Con]
+            ret.append(data_result[Val])
+            r_paren_result = r_paren(con)
 
-        return (Result.Ok, r_paren_result[Con], )
+            if r_paren_result[Res] is Result.Fail:
+                comma_result = comma(con)
+                if comma_result[Res] is Result.Fail:
+                    raise Exception("Expected comma inside data body parser")
+                con = comma_result[Con]
+
+        return (Result.Ok, r_paren_result[Con], ret)
+
+    ret = Data()
+
+    dot_result = dot(input)
+
+    if dot_result[Res] is Result.Ok:
+        pass
 
     var_result = variable(input)
 
-    ret = Data()
 
     if var_result[Res] is Result.Ok:
         ret.name = var_result[Val]
@@ -123,6 +150,7 @@ def r_paren(input):
     else:
         gs = m.groups()
         return (Result.Ok, gs[0])
+
 # . -> match any one string
 # * -> match any number of strings or data
 # x -> match 'x'
@@ -132,7 +160,6 @@ def r_paren(input):
 # X(*) -> match data { name: ?, args:[?]}
 # x(y(z, h(), *)) -> match data { name: x, args:[ data { name: y, args: ['z', data { name: h, args:[] }]}, ... ]}
 # x(), y(), z() -> match [data { name: x, args:[]}, data { name: y, args:[]}, data { name: z, args:[]} ]
-# * -> match any number of things
 def parse_matcher(str):
     pass
 
