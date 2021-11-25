@@ -33,14 +33,24 @@ class Matcher:
     def match_exact(self, data):
         pass
 
-class MatchAnyString:
+class MatchAnyString: # dot
     def match(self, data):
         if type(data) is str:
             return Match(data)
         else:
             return Match()
 
-class MatchUntilEnd:
+class CaptureString:
+    def __init__(self, capture_name):
+        self.capture_name = capture_name
+    
+    def match(self, data):
+        if type(data) is str:
+            return Match(data, {self.capture_name: data})
+        else:
+            return Match()
+
+class MatchUntilEnd: # star
     pass
 
 class MatchStringWithValue:
@@ -81,6 +91,33 @@ class MatchDataWithName:
         else:
             return Match()
 
+class CaptureData:
+    def __init__(self, capture_name, sub_matchers = []):
+        self.capture_name = capture_name
+        self.sub_matchers = sub_matchers
+
+    def match(self, data):
+        if type(data) is Data:
+            matches = [{self.capture_name: data}]
+            for (m, d) in itertools.zip_longest(self.sub_matchers, data.args):
+                if m is None and d is not None:
+                    return Match()
+                elif type(m) is MatchUntilEnd:
+                    all_captures = merge_captures(map(lambda x: x.captures, matches))
+                    return Match(data, all_captures)
+                elif m is not None and d is None:
+                    return Match()
+                else:
+                    r = m.match(d)
+                    if r.name is None:
+                        return Match()
+                    else:
+                        matches.append(r)
+            
+            all_captures = merge_captures(map(lambda x: x.captures, matches))
+            return Match(data, all_captures)
+        else:
+            return Match()
 
 class Match:
     def __init__(self, match = None, captures = {}):
