@@ -22,9 +22,20 @@ def matcher(input):
     # TODO make sure * is always last
 
     def body(input):
-        # TODO need to grab variable or symbol
+        var_result = variable(input)
 
-        l_paren_result = l_paren(input)
+        if var_result[Res] is Result.Ok:
+            constructor = lambda sub_matchers: CaptureData(var_result[Val], sub_matchers)
+            con = var_result[Con]
+        else:
+            sym_result = symbol(input)
+            if sym_result[Res] is Result.Ok:
+                constructor = lambda sub_matchers: MatchDataWithName(sym_result[Val], sub_matchers)
+                con = sym_result[Con]
+            else:
+                return (Result.Fail, input)
+
+        l_paren_result = l_paren(con)
 
         if l_paren_result[Res] is Result.Fail:
             return (Result.Fail, input)
@@ -39,7 +50,7 @@ def matcher(input):
             data_result = matcher(con)
 
             if data_result[Res] is Result.Fail:
-                raise Exception("Found invalid input inside data body parser")
+                raise Exception("Found invalid input inside matcher body parser")
             
             con = data_result[Con]
             ret.append(data_result[Val])
@@ -48,10 +59,10 @@ def matcher(input):
             if r_paren_result[Res] is Result.Fail:
                 comma_result = comma(con)
                 if comma_result[Res] is Result.Fail:
-                    raise Exception("Expected comma inside data body parser")
+                    raise Exception("Expected comma inside matcher parser")
                 con = comma_result[Con]
 
-        return (Result.Ok, r_paren_result[Con], ret)
+        return (Result.Ok, r_paren_result[Con], constructor(ret))
 
     dot_result = dot(input)
 
@@ -147,7 +158,14 @@ def r_paren(input):
 # x(y(z, h(), *)) -> match data { name: x, args:[ data { name: y, args: ['z', data { name: h, args:[] }]}, ... ]}
 # x(), y(), z() -> match [data { name: x, args:[]}, data { name: y, args:[]}, data { name: z, args:[]} ]
 def parse_matcher(str):
-    pass
+    # TODO need to handle more than one thing
+    matcher_result = matcher(str)
+    if matcher_result[Res] is Result.Ok and matcher_result[Con] == '':
+        return matcher_result[Val]
+    elif matcher_result[Res] is Result.Ok:
+        raise Exception(f"Matcher parser did not parse entire input: {matcher_result[Con]}")
+    else:
+        raise Exception("Failure to parse matcher")
 
 # blah -> "blah"
 # x(blah)  -> data { name: x, args: ["blah"]}
