@@ -5,7 +5,6 @@ from .parse import *
 
 class MatchingTest(unittest.TestCase):
 
-    # TODO
     # a = a => M: a
     # a = A => M: a, A = a
     # a = . => M: a
@@ -138,6 +137,25 @@ class MatchingTest(unittest.TestCase):
     def test_match_data_should_not_match_recursive_data(self):
         input = parse_data("data(1, 2, inner(x, 2), 3)")
         matcher = parse_matcher("data(1, 2, inner(1, 2), 3)")
+        match = matcher.match(input)
+        self.assertFalse(match.success())
+
+    def test_match_data_should_capture_recursive_data(self):
+        input = parse_data("data(1, 2, inner(1, 2), 3)")
+        matcher = parse_matcher("Data(A, 2, Inner(1, 2), 3)")
+        match = matcher.match(input)
+        self.assertTrue(match.success())
+        self.assertEqual(match.match.serialize(), input.serialize())
+        self.assertTrue("Data" in match.captures)
+        self.assertEqual(match.captures["Data"].serialize(), input.serialize())
+        self.assertTrue("Inner" in match.captures)
+        self.assertEqual(match.captures["Inner"].serialize(), "inner(1,2)")
+        self.assertTrue("A" in match.captures)
+        self.assertEqual(match.captures["A"], "1")
+
+    def test_match_data_should_not_capture_recursive_data(self):
+        input = parse_data("data(1, 2, inner(1, 2), 3)")
+        matcher = parse_matcher("Data(A, 2, Inner(1, 2), x)")
         match = matcher.match(input)
         self.assertFalse(match.success())
 
