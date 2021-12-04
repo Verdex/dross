@@ -22,23 +22,23 @@ class Matcher:
     def __init__(self, matchers):
         self.matchers = matchers
 
-    def match_all(self, data):
-        # type(data) is str
-        # type(data) is Data
-        # type(data) is array of Data|str?
+    def match_all(self, data_list):
+        pass
+
+    def match_first(self, data_list):
         pass
     
     def match(self, data):
-        # data : Data | str | [(Data|str)]
-        # ret : (bool, Match)
-        # matchers has to be length 1?
-        pass
+        if type(data) is list:
+            pass
+        elif type(data) is Data or type(data) is str:
+            if len(self.matchers) != 1:
+                raise Exception("Attempt to match multiple matchers against single data")
+            pass
+        else:
+            raise Exception("Match encountered unsupported type")
 
-    def match_first(self, data):
-        pass
 
-    def match_exact(self, data):
-        pass
 
 class MatchAnyString: # dot
     def match(self, data):
