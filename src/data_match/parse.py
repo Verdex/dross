@@ -18,8 +18,6 @@ Con = 1
 Val = 2
 
 def matcher(input):
-    # TODO
-    # TODO make sure * is always last
 
     def body(input):
         var_result = variable(input)
