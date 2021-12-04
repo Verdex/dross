@@ -5,6 +5,22 @@ from .parse import *
 
 class MatchingTest(unittest.TestCase):
 
+    # TODO
+    # a = a => M: a
+    # a = A => M: a, A = a
+    # a = . => M: a
+    # a = b => M:
+    # a = * => M: a
+    # a, b = * => M: [a, b]
+    # a = a() => M:
+
+    # a() = a => M:
+    # a() = a() => M: a()
+    # a() = A() => M: a(), A = a()
+    # a() = . => M:
+    # a() = * => M: a()
+
+
     def test_match_should_match_star(self):
         input = parse_data("blah(1,2,3)")
         matcher = parse_matcher("*")
