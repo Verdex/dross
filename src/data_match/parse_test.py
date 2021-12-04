@@ -63,5 +63,14 @@ class ParseTest(unittest.TestCase):
         self.assertTrue(type(output[0].sub_matchers[3]) is MatchDataWithName)
         self.assertTrue(type(output[0].sub_matchers[4]) is MatchUntilEnd)
 
+    def test_parse_matcher_should_parse_multiple_matchers(self):
+        output = parse_matcher("string(1,2,3), ., string, String, *")
+        self.assertEqual(len(output), 5)
+        self.assertTrue(type(output[0]) is MatchDataWithName)
+        self.assertTrue(type(output[1]) is MatchAnyString)
+        self.assertTrue(type(output[2]) is MatchStringWithValue)
+        self.assertTrue(type(output[3]) is CaptureString)
+        self.assertTrue(type(output[4]) is MatchUntilEnd)
+
 if __name__ == '__main__':
     unittest.main()

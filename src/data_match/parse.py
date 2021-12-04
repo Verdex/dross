@@ -155,12 +155,12 @@ def r_paren(input):
 # X(*) -> match data { name: ?, args:[?]}
 # x(y(z, h(), *)) -> match data { name: x, args:[ data { name: y, args: ['z', data { name: h, args:[] }]}, ... ]}
 # x(), y(), z() -> match [data { name: x, args:[]}, data { name: y, args:[]}, data { name: z, args:[]} ]
-def parse_matcher(str):
+def parse_matcher(input):
 
-    def all_matchers(str):
+    def all_matchers(input):
 
         ret = []
-        con = str
+        con = input 
         while True:
             matcher_result = matcher(con)
             if matcher_result[Res] is Result.Fail:
@@ -169,10 +169,10 @@ def parse_matcher(str):
             comma_result = comma(matcher_result[Con])
             if comma_result[Res] is Result.Fail:
                 return (Result.Ok, matcher_result[Con], ret)
-            con = comma_result[Res]
+            con = comma_result[Con]
         
 
-    matcher_result = all_matchers(str)
+    matcher_result = all_matchers(input)
     if matcher_result[Res] is Result.Ok and matcher_result[Con] == '':
         return matcher_result[Val]
     elif matcher_result[Res] is Result.Ok:
