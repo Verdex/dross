@@ -91,7 +91,7 @@ class MatchDataWithName:
                     return Match()
                 else:
                     r = m.match(d)
-                    if r.name is None:
+                    if r.match is None:
                         return Match()
                     else:
                         matches.append(r)
