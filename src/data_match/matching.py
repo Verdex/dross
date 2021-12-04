@@ -30,7 +30,27 @@ class Matcher:
     
     def match(self, data):
         if type(data) is list:
-            pass
+            ret = []
+            until_end = False
+            for (m, d) in itertools.zip_longest(self.matchers, data):
+                if until_end:
+                    ret.append(Match(d))
+                elif m is None and d is not None:
+                    return Match()
+                elif m is not None and d is None:
+                    return Match()
+                elif type(m) is MatchUntilEnd:
+                    ret.append(Match(d))
+                    until_end = True
+                else:
+                    result = m.match(d)
+                    if result.success():
+                        ret.append(result)
+                    else:
+                        return Match()
+            all_matches = list(map(lambda m: m.match, ret))
+            all_captures = merge_captures(map(lambda x: x.captures, ret))
+            return Match(all_matches, all_captures)
         elif type(data) is Data or type(data) is str:
             if len(self.matchers) != 1:
                 raise Exception("Attempt to match multiple matchers against single data")

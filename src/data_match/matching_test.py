@@ -159,5 +159,29 @@ class MatchingTest(unittest.TestCase):
         match = matcher.match(input)
         self.assertFalse(match.success())
 
+    def test_match_array_should_match(self):
+        input = [ parse_data("data") \
+                , parse_data("data()") \
+                , parse_data("data(data)") \
+                , parse_data("data(data(), data)") \
+                ]
+        matcher = parse_matcher("data, data(), data(data), data(data(), data)")
+        match = matcher.match(input)
+        self.assertTrue(match.success)
+        self.assertEqual(len(match.match), 4)
+        self.assertEqual(match.match[0], input[0])
+        self.assertEqual(match.match[1].serialize(), input[1].serialize())
+        self.assertEqual(match.match[2].serialize(), input[2].serialize())
+        self.assertEqual(match.match[3].serialize(), input[3].serialize())
+
+    # * 
+    # capture
+    # capture *
+    # not match 
+    # not match *
+    # not capture
+    # not capture *
+
+            
 if __name__ == '__main__':
     unittest.main()
