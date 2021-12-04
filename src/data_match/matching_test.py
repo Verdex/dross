@@ -12,6 +12,8 @@ class MatchingTest(unittest.TestCase):
     # a = b => M:
     # a = * => M: a
     # a, b = * => M: [a, b]
+    # a, b = a, b => M: [a, b]
+    # a, b = A, B => M: [a, b], A = a, B = b
     # a = a() => M:
 
     # a() = a => M:
@@ -19,6 +21,14 @@ class MatchingTest(unittest.TestCase):
     # a() = A() => M: a(), A = a()
     # a() = . => M:
     # a() = * => M: a()
+    # a(P+) = * => M: a(P+)
+    # a(P+) = . => M: 
+    # a(P+) = A(P+) => M: a(P+), A = a(P+), ...
+    # a(P+) = a(P+) => M: a(P+),  ...
+    # a(1, 2, 3) = a(1, *) => M: a(1, 2, 3)
+    # a(), b() = a(), b() => M: [a(), b()]
+    # a(), b() = * => M: [a(), b()]
+    # a(), b() = A(), B() => M: [a(), b()], A = a(), B = b()
 
 
     def test_match_should_match_star(self):
