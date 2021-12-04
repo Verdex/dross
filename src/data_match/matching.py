@@ -25,9 +25,13 @@ class Matcher:
     def match_all(self, data):
         # type(data) is str
         # type(data) is Data
+        # type(data) is array of Data|str?
         pass
     
     def match(self, data):
+        # data : Data | str | [(Data|str)]
+        # ret : (bool, Match)
+        # matchers has to be length 1?
         pass
 
     def match_first(self, data):

@@ -4,7 +4,9 @@ from .matching import *
 from .parse import *
 
 class MatchingTest(unittest.TestCase):
-    pass
+
+    def test_(self):
+        pass
 
 
 if __name__ == '__main__':
