@@ -19,6 +19,9 @@ class Data:
 
 class Matcher:
 
+    def __init__(self, matchers):
+        self.matchers = matchers
+
     def match_all(self, data):
         # type(data) is str
         # type(data) is Data

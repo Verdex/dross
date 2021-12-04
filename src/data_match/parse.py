@@ -2,6 +2,7 @@
 import re
 from enum import Enum
 from . import Data
+from .matching import Matcher
 from .matching import MatchAnyString
 from .matching import CaptureString 
 from .matching import MatchUntilEnd
@@ -174,7 +175,7 @@ def parse_matcher(input):
 
     matcher_result = all_matchers(input)
     if matcher_result[Res] is Result.Ok and matcher_result[Con] == '':
-        return matcher_result[Val]
+        return Matcher(matcher_result[Val])
     elif matcher_result[Res] is Result.Ok:
         raise Exception(f"Matcher parser did not parse entire input: {matcher_result[Con]}")
     else:
