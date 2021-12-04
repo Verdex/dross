@@ -34,7 +34,10 @@ class Matcher:
         elif type(data) is Data or type(data) is str:
             if len(self.matchers) != 1:
                 raise Exception("Attempt to match multiple matchers against single data")
-            pass
+            if type(self.matchers[0]) is MatchUntilEnd:
+                return Match(data)
+            else:
+                return self.matchers[0].match(data)
         else:
             raise Exception("Match encountered unsupported type")
 
@@ -105,7 +108,7 @@ class CaptureData:
 
     def match(self, data):
         if type(data) is Data:
-            matches = [{self.capture_name: data}]
+            matches = [Match(data, {self.capture_name: data})]
             for (m, d) in itertools.zip_longest(self.sub_matchers, data.args):
                 if m is None and d is not None:
                     return Match()
@@ -116,7 +119,7 @@ class CaptureData:
                     return Match()
                 else:
                     r = m.match(d)
-                    if r.name is None:
+                    if r.match is None: 
                         return Match()
                     else:
                         matches.append(r)
@@ -130,6 +133,9 @@ class Match:
     def __init__(self, match = None, captures = {}):
         self.match = match
         self.captures = captures
+
+    def success(self):
+        return self.match != None
 
 def merge_captures(matches):
     ret = {}
