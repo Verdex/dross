@@ -54,7 +54,7 @@ class MatchingTest(unittest.TestCase):
         match = matcher.match(input)
         self.assertTrue(match.success())
         self.assertTrue("X" in match.captures)
-        #self.assertEqual(match.captures["X"], "blah")
+        self.assertEqual(match.captures["X"].serialize(), input.serialize())
 
 if __name__ == '__main__':
     unittest.main()
