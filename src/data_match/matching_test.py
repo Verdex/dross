@@ -167,20 +167,111 @@ class MatchingTest(unittest.TestCase):
                 ]
         matcher = parse_matcher("data, data(), data(data), data(data(), data)")
         match = matcher.match(input)
-        self.assertTrue(match.success)
+        self.assertTrue(match.success())
         self.assertEqual(len(match.match), 4)
         self.assertEqual(match.match[0], input[0])
         self.assertEqual(match.match[1].serialize(), input[1].serialize())
         self.assertEqual(match.match[2].serialize(), input[2].serialize())
         self.assertEqual(match.match[3].serialize(), input[3].serialize())
 
-    # * 
-    # capture
-    # capture *
-    # not match 
-    # not match *
-    # not capture
-    # not capture *
+    def test_match_array_should_not_match(self):
+        input = [ parse_data("data") \
+                , parse_data("data()") \
+                , parse_data("data(data)") \
+                , parse_data("data(data(), data)") \
+                ]
+        matcher = parse_matcher("data, data(), data(data), data(data(), data2)")
+        match = matcher.match(input)
+        self.assertFalse(match.success())
+
+    def test_match_array_should_match_with_star(self):
+        input = [ parse_data("data") \
+                , parse_data("data()") \
+                , parse_data("data(data)") \
+                , parse_data("data(data(), data)") \
+                ]
+        matcher = parse_matcher("data, *")
+        match = matcher.match(input)
+        self.assertTrue(match.success())
+        self.assertEqual(len(match.match), 4)
+        self.assertEqual(match.match[0], input[0])
+        self.assertEqual(match.match[1].serialize(), input[1].serialize())
+        self.assertEqual(match.match[2].serialize(), input[2].serialize())
+        self.assertEqual(match.match[3].serialize(), input[3].serialize())
+
+    def test_match_array_should_not_match_with_star(self):
+        input = [ parse_data("data") \
+                , parse_data("data()") \
+                , parse_data("data(data)") \
+                , parse_data("data(data(), data)") \
+                ]
+        matcher = parse_matcher("data2, *")
+        match = matcher.match(input)
+        self.assertFalse(match.success())
+
+    def test_match_array_should_capture(self):
+        input = [ parse_data("data1") \
+                , parse_data("data2()") \
+                , parse_data("data3(data4)") \
+                , parse_data("data5(data6(), data7)") \
+                ]
+        matcher = parse_matcher("D1, data2(), D3(D4), D5(D6(), D7)")
+        match = matcher.match(input)
+        self.assertTrue(match.success())
+        self.assertEqual(len(match.match), 4)
+        self.assertEqual(match.match[0], input[0])
+        self.assertEqual(match.match[1].serialize(), input[1].serialize())
+        self.assertEqual(match.match[2].serialize(), input[2].serialize())
+        self.assertEqual(match.match[3].serialize(), input[3].serialize())
+        self.assertTrue("D1" in match.captures)
+        self.assertEqual(match.captures["D1"], "data1")
+        self.assertTrue("D3" in match.captures)
+        self.assertEqual(match.captures["D3"].serialize(), "data3(data4)")
+        self.assertTrue("D4" in match.captures)
+        self.assertEqual(match.captures["D4"], "data4")
+        self.assertTrue("D5" in match.captures)
+        self.assertEqual(match.captures["D5"].serialize(), "data5(data6(),data7)")
+        self.assertTrue("D6" in match.captures)
+        self.assertEqual(match.captures["D6"].serialize(), "data6()")
+        self.assertTrue("D7" in match.captures)
+        self.assertEqual(match.captures["D7"], "data7")
+
+    def test_match_array_should_not_capture(self):
+        input = [ parse_data("data1") \
+                , parse_data("data2()") \
+                , parse_data("data3(data4)") \
+                , parse_data("data5(data6(), data7)") \
+                ]
+        matcher = parse_matcher("D1, dataX(), D3(D4), D5(D6(), D7)")
+        match = matcher.match(input)
+        self.assertFalse(match.success())
+
+    def test_match_array_should_capture_star(self):
+        input = [ parse_data("data1") \
+                , parse_data("data2()") \
+                , parse_data("data3(data4)") \
+                , parse_data("data5(data6(), data7)") \
+                ]
+        matcher = parse_matcher("D1, data2(), *")
+        match = matcher.match(input)
+        self.assertTrue(match.success())
+        self.assertEqual(len(match.match), 4)
+        self.assertEqual(match.match[0], input[0])
+        self.assertEqual(match.match[1].serialize(), input[1].serialize())
+        self.assertEqual(match.match[2].serialize(), input[2].serialize())
+        self.assertEqual(match.match[3].serialize(), input[3].serialize())
+        self.assertTrue("D1" in match.captures)
+        self.assertEqual(match.captures["D1"], "data1")
+
+    def test_match_array_should_not_capture_star(self):
+        input = [ parse_data("data1") \
+                , parse_data("data2()") \
+                , parse_data("data3(data4)") \
+                , parse_data("data5(data6(), data7)") \
+                ]
+        matcher = parse_matcher("D1, dataX(), *")
+        match = matcher.match(input)
+        self.assertFalse(match.success())
 
             
 if __name__ == '__main__':
