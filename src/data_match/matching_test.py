@@ -273,6 +273,51 @@ class MatchingTest(unittest.TestCase):
         match = matcher.match(input)
         self.assertFalse(match.success())
 
+    def test_match_first_matches_first(self):
+        input = [ parse_data("a()") \
+                , parse_data("b(1)") \
+                , parse_data("c(2)") \
+                , parse_data("b(3)") \
+                , parse_data("c(4)") \
+                , parse_data("b(5)") \
+                , parse_data("c(6)") \
+                ]
+        matcher = parse_matcher("b(X), c(4)")
+        match = matcher.match_first(input)
+        self.assertTrue(match.success())
+        self.assertEqual(len(match.match), 2)
+        self.assertEqual(match.match[0].serialize(), "b(3)")
+        self.assertEqual(match.match[1].serialize(), "c(4)")
+        self.assertTrue("X" in match.captures)
+        self.assertEqual(match.captures["X"], "3")
             
+    def test_match_all_matches_all(self):
+        input = [ parse_data("a()") \
+                , parse_data("b(1)") \
+                , parse_data("c(2)") \
+                , parse_data("b(3)") \
+                , parse_data("c(4)") \
+                , parse_data("b(5)") \
+                , parse_data("c(6)") \
+                , parse_data("b(5)") \
+                , parse_data("c(4)") \
+                ]
+        matcher = parse_matcher("b(X), c(4)")
+        match = matcher.match_all(input)
+        self.assertEqual(len(match), 2)
+        self.assertTrue(match[0].success())
+        self.assertEqual(len(match[0].match), 2)
+        self.assertEqual(match[0].match[0].serialize(), "b(3)")
+        self.assertEqual(match[0].match[1].serialize(), "c(4)")
+        self.assertTrue("X" in match[0].captures)
+        self.assertEqual(match[0].captures["X"], "3")
+
+        self.assertTrue(match[1].success())
+        self.assertEqual(len(match[1].match), 2)
+        self.assertEqual(match[1].match[0].serialize(), "b(5)")
+        self.assertEqual(match[1].match[1].serialize(), "c(4)")
+        self.assertTrue("X" in match[1].captures)
+        self.assertEqual(match[1].captures["X"], "5")
+
 if __name__ == '__main__':
     unittest.main()
