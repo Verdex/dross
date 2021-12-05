@@ -23,10 +23,23 @@ class Matcher:
         self.matchers = matchers
 
     def match_all(self, data_list):
-        pass
+        assert type(data_list) is list
+        ret = []
+        window = len(self.matchers)
+        for i in range(len(data_list)):
+            result = self.match(data_list[i:i + window])
+            if result.success():
+                ret.append(result)
+        return ret 
 
     def match_first(self, data_list):
-        pass
+        assert type(data_list) is list
+        window = len(self.matchers)
+        for i in range(len(data_list)):
+            result = self.match(data_list[i:i + window])
+            if result.success():
+                return result
+        return Match()
     
     def match(self, data):
         if type(data) is list:
